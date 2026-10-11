@@ -1,0 +1,47 @@
+#root {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  border: none;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+article {
+  border: 2px solid #555;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+article img {
+  max-width: 100%;
+  height: auto;
+}
+
+article h2 {
+  text-transform: capitalize;
+}
+
+.tipos {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tipos li {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #333;
+  text-transform: capitalize;
+}
+
+.error {
+  color: tomato;
+}
