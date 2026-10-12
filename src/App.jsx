@@ -14,7 +14,7 @@ function App() {
       setCargando(true)
       setError(null)
       try {
-        const ids = Array.from({ length: 12 }, (_, i) => i + 1)
+        const ids = Array.from({ length: 30 }, (_, i) => i + 1)
         const respuestas = await Promise.all(
           ids.map(async (id) => {
             const res = await fetch(`${API}/pokemon/${id}`)
