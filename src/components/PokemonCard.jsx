@@ -1,17 +1,17 @@
-import React from 'react'
-
-export const PokemonCard = ({ pokemon }) => {
-        const image = pokemon.sprites.other['official-artwork'].front_default
-    return (
-        <article>
-            <img src={image} alt={pokemon.name} width="200"/>
-            <h2>#{pokemon.id} {pokemon.name}</h2>
-            <ul className='tipos'>
-                {pokemon.types.map((type) => (
-                    <li key={type.type.name}>{type.type.name}</li>
-                ))}
-            </ul>
-            <p>Altura: {pokemon.height/10}m - Peso: {pokemon.weight/10}kg</p>
-        </article>
-    )
+// Recibe un pokemon normalizado (ver src/pokemon.js), venga de PokéAPI o de Firestore
+export const PokemonCard = ({ pokemon, onAgregar, onQuitar }) => {
+  return (
+    <article className='tarjeta'>
+        <img src={pokemon.img} alt={pokemon.nombre} width="200" />
+        <h2>#{pokemon.id} {pokemon.nombre}</h2>
+        <ul className='tipos'>
+            {pokemon.tipos.map(t => (
+                <li key={t}>{t}</li>
+            ))}
+        </ul>
+        {pokemon.altura != null && <p>Altura: {pokemon.altura}m - Peso: {pokemon.peso}kg</p>}
+        {onAgregar && <button onClick={() => onAgregar(pokemon)}>Agregar</button>}
+        {onQuitar && <button onClick={() => onQuitar(pokemon.id)}>Quitar</button>}
+    </article>
+  )
 }
