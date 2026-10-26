@@ -1,20 +1,12 @@
 
 import { useState, useEffect } from 'react'
-import {
-  collection,
-  doc,
-  getDocs,
-  setDoc,
-  deleteDoc
-} from 'firebase/firestore'
 
-import { db } from './firebase'
 import { PokemonCard } from './components/PokemonCard'
-import { normalizar } from './pokemon'
+import { obtenerPokemon, obtenerPagina } from './data/pokemones'
+import { obtenerEquipo, guardarEnEquipo, quitarDeEquipo } from './data/equipo'
+import { normalizar, calcularRango, LIMITE } from './logic/pokemones'
+import { validarAgregar } from './logic/equipo'
 import './App.css'
-
-const API = 'https://pokeapi.co/api/v2'
-const LIMITE = 25 // Pokémon por página
 
 function App() {
   const [pokemones, setPokemones] = useState([])
@@ -32,23 +24,17 @@ function App() {
 
   // Agregar un Pokémon al equipo
   async function agregar(p) {
-    if (equipo.length >= 6) {
-      setErrorEquipo('Tu equipo ya tiene 6 Pokémon.')
-      return
-    }
+    const mensaje = validarAgregar(equipo, p)
 
-    if (equipo.some((e) => e.id === p.id)) {
-      setErrorEquipo('Este Pokémon ya está en tu equipo.')
+    if (mensaje) {
+      setErrorEquipo(mensaje)
       return
     }
 
     try {
       setErrorEquipo(null)
 
-      await setDoc(
-        doc(db, 'equipo', String(p.id)),
-        p
-      )
+      await guardarEnEquipo(p)
 
       setEquipo((actual) => [...actual, p])
     } catch (err) {
@@ -63,9 +49,7 @@ function App() {
     try {
       setErrorEquipo(null)
 
-      await deleteDoc(
-        doc(db, 'equipo', String(id))
-      )
+      await quitarDeEquipo(id)
 
       setEquipo((actual) =>
         actual.filter((p) => p.id !== Number(id))
@@ -102,50 +86,16 @@ function App() {
 
       try {
         if (consulta) {
-          const res = await fetch(
-            `${API}/pokemon/${encodeURIComponent(consulta)}`
-          )
-
-          if (!res.ok) {
-            throw new Error(
-              `Pokémon no encontrado (${res.status})`
-            )
-          }
-
-          const data = await res.json()
+          const data = await obtenerPokemon(consulta)
 
           if (!cancelado) {
             setPokemones([normalizar(data)])
           }
         } else {
-          const res = await fetch(
-            `${API}/pokemon?limit=${LIMITE}&offset=${offset}`
-          )
-
-          if (!res.ok) {
-            throw new Error(
-              `Error al cargar la lista (${res.status})`
-            )
-          }
-
-          const lista = await res.json()
-
-          const detalles = await Promise.all(
-            lista.results.map(async (p) => {
-              const respuesta = await fetch(p.url)
-
-              if (!respuesta.ok) {
-                throw new Error(
-                  `No se pudo cargar ${p.name}`
-                )
-              }
-
-              return respuesta.json()
-            })
-          )
+          const { total, detalles } = await obtenerPagina(LIMITE, offset)
 
           if (!cancelado) {
-            setTotal(lista.count)
+            setTotal(total)
             setPokemones(detalles.map(normalizar))
           }
         }
@@ -171,17 +121,7 @@ function App() {
   useEffect(() => {
     async function cargarEquipo() {
       try {
-        const snap = await getDocs(
-          collection(db, 'equipo')
-        )
-
-        setEquipo(
-          snap.docs.map((d) => ({
-            tipos: [],
-            ...d.data(),
-            id: Number(d.id)
-          }))
-        )
+        setEquipo(await obtenerEquipo())
       } catch (err) {
         setErrorEquipo(
           `No se pudo cargar el equipo: ${err.message}`
@@ -192,8 +132,7 @@ function App() {
     cargarEquipo()
   }, [])
 
-  const desde = offset + 1
-  const hasta = Math.min(offset + LIMITE, total)
+  const { desde, hasta } = calcularRango(offset, total)
 
   return (
     <main>
