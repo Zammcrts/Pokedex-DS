@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 
 import { PokemonCard } from './components/PokemonCard'
-import { obtenerPokemon, obtenerPagina } from './data/pokemones'
+import { buscarPokemones, obtenerPagina } from './data/pokemones'
 import { obtenerEquipo, guardarEnEquipo, quitarDeEquipo } from './data/equipo'
 import { normalizar, calcularRango, LIMITE } from './logic/pokemones'
 import { validarAgregar } from './logic/equipo'
@@ -85,19 +85,13 @@ function App() {
       setError(null)
 
       try {
-        if (consulta) {
-          const data = await obtenerPokemon(consulta)
+        const { total, detalles } = consulta
+          ? await buscarPokemones(consulta, LIMITE, offset)
+          : await obtenerPagina(LIMITE, offset)
 
-          if (!cancelado) {
-            setPokemones([normalizar(data)])
-          }
-        } else {
-          const { total, detalles } = await obtenerPagina(LIMITE, offset)
-
-          if (!cancelado) {
-            setTotal(total)
-            setPokemones(detalles.map(normalizar))
-          }
+        if (!cancelado) {
+          setTotal(total)
+          setPokemones(detalles.map(normalizar))
         }
       } catch (err) {
         if (!cancelado) {
@@ -154,7 +148,7 @@ function App() {
         )}
       </form>
 
-      {!consulta && (
+      {!error && (
         <div className="navegacion">
           <button
             disabled={cargando || offset === 0}

@@ -12,6 +12,16 @@ export function normalizar(raw) {
   }
 }
 
+// Filtra la lista { name, url } de PokéAPI por nombre parcial; primero los que empiezan con la consulta
+export function filtrarPorNombre(lista, consulta) {
+  const empiezan = lista.filter(p => p.name.startsWith(consulta))
+  const contienen = lista.filter(
+    p => !p.name.startsWith(consulta) && p.name.includes(consulta)
+  )
+
+  return [...empiezan, ...contienen]
+}
+
 // Rango que se muestra en la navegación ("desde–hasta de total")
 export function calcularRango(offset, total) {
   return {
