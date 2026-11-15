@@ -1,14 +1,41 @@
 export const MAX_EQUIPO = 6
 
-// Devuelve el mensaje de error si no se puede agregar, o null si se puede
-export function validarAgregar(equipo, p) {
-  if (equipo.length >= MAX_EQUIPO) {
-    return 'Tu equipo ya tiene 6 Pokémon.'
-  }
+export const MENSAJES = {
+  SIN_NOMBRE: 'Ponle nombre a tu equipo',
+  VACIO: 'Agrega al menos un Pokémon',
+  DEMASIADOS: `Un equipo tiene máximo ${MAX_EQUIPO} Pokémon`,
+}
 
-  if (equipo.some((e) => e.id === p.id)) {
-    return 'Este Pokémon ya está en tu equipo.'
-  }
+export function crearEquipo() {
+  return { nombre: '', pokemones: [] }
+}
 
-  return null
+export function estaEnEquipo(equipo, id) {
+  return equipo.pokemones.some((p) => p.id === id)
+}
+
+export function estaLleno(equipo) {
+  return equipo.pokemones.length >= MAX_EQUIPO
+}
+
+export function agregarPokemon(equipo, pokemon) {
+  if (estaLleno(equipo) || estaEnEquipo(equipo, pokemon.id)) return equipo
+  const { id, nombre, img, tipos } = pokemon
+  return { ...equipo, pokemones: [...equipo.pokemones, { id, nombre, img, tipos }] }
+}
+
+export function quitarPokemon(equipo, id) {
+  return { ...equipo, pokemones: equipo.pokemones.filter((p) => p.id !== id) }
+}
+
+export function ponerNombre(equipo, nombre) {
+  return { ...equipo, nombre }
+}
+
+export function validarEquipo(equipo) {
+  const errores = []
+  if (equipo.nombre.trim() === '') errores.push('SIN_NOMBRE')
+  if (equipo.pokemones.length === 0) errores.push('VACIO')
+  if (equipo.pokemones.length > MAX_EQUIPO) errores.push('DEMASIADOS')
+  return { valido: errores.length === 0, errores }
 }
