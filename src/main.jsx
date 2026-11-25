@@ -6,6 +6,6 @@ import LoginDemo from './LoginDemo.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <LoginDemo />
+    <App />
   </StrictMode>,
 )
